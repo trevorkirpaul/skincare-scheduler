@@ -1,0 +1,10 @@
+version: '3.3'
+
+services:
+ frontend:
+  tty: true
+  build:
+   context: .
+  ports:
+   - 8000:8000
+  command: ["yarn", "dev"]
