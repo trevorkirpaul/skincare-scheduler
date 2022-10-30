@@ -22,7 +22,7 @@ const style = {
 interface P {
   open: any
   handleClose: any
-  handleAddToDay: (day: string, product: string) => void
+  handleAddToDay: (day: string, product: string, remove?: boolean) => void
   products: void | Product[] | undefined
 }
 

@@ -37,7 +37,7 @@ const CalendarRoute: React.FC = () => {
     return <span>loading...</span>
   }
 
-  const handleAddToDay = (day: string, product: string, remove: boolean) => {
+  const handleAddToDay = (day: string, product: string, remove?: boolean) => {
     setDaysInState((prevDaysInState: any) =>
       prevDaysInState.map((d) => {
         if (d.day === day) {

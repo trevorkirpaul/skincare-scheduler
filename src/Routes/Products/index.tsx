@@ -15,6 +15,10 @@ import {
 import axios from 'axios'
 import type { Product } from '../../types'
 import { handleFetchProducts } from '../../shared/ProductAPI'
+import { useSelector, useDispatch } from 'react-redux'
+import { loadProducts } from '../../shared/redux/reducers/ProductReducer'
+import { RootState } from '../../shared/redux/store'
+import { useGetProductsQuery } from '../../shared/redux/services/api'
 
 const Card = ({
   name,
@@ -39,46 +43,20 @@ const Card = ({
         {type}
       </Typography>
     </CardContent>
-    {/* <CardActions>
-      <Button size="small">Learn More</Button>
-    </CardActions> */}
   </CardBase>
 )
 
 export const ProductsRoute = () => {
-  const { isLoading, isError, data, error } = useQuery(
-    ['products'],
-    handleFetchProducts,
-  )
-  if (isError) {
-    return (
-      <>
-        <span className="danger" style={{ color: 'red' }}>
-          error
-        </span>
-      </>
-    )
-  }
-  if (isLoading) {
-    return (
-      <>
-        <span>loading...</span>
-      </>
-    )
-  }
+  const { data, error, isLoading } = useGetProductsQuery()
 
-  if (!data || data.length === 0) {
-    return (
-      <>
-        <span>No Products found</span>
-      </>
-    )
-  }
+  const products = useSelector((state: RootState) => state.products)
+  const dispatch = useDispatch()
 
-  console.log('data', data)
+  if (isLoading) return <span>loading...</span>
+
   return (
     <>
-      {data.map((prod) => {
+      {data?.map((prod) => {
         return <Card key={prod._id} {...prod} />
       })}
     </>
