@@ -9,6 +9,7 @@ import {
 } from '@mui/material'
 import React from 'react'
 import AddIcon from '@mui/icons-material/Add'
+import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
 import type { Product } from '../../../types'
@@ -18,6 +19,7 @@ interface Props {
   day: string
   handleOpenAddProductModal: any
   handleReorderProductsForDay: (day: string, result: any) => void
+  handleAddToDay: (day: string, product: string, remove: boolean) => void
   items: string[]
   products: void | Product[] | undefined
 }
@@ -28,6 +30,7 @@ const Day: React.FC<Props> = ({
   handleOpenAddProductModal,
   handleReorderProductsForDay,
   products,
+  handleAddToDay,
 }) => {
   const style = {
     minHeight: '100px',
@@ -88,15 +91,22 @@ const Day: React.FC<Props> = ({
                             background: getColorForTypeOfProduct(
                               thisProduct?.type,
                             ),
+                            alignItems: 'baseline',
                           }}
                         >
                           <ListItemText
                             primary={thisProduct?.name || item}
                             secondary={thisProduct?.brand || undefined}
+                          />
+
+                          <IconButton
+                            onClick={() => handleAddToDay(day, item, true)}
+                            color="primary"
+                            aria-label="upload picture"
+                            component="label"
                           >
-                            {products?.find((p) => p._id === item)?.name ||
-                              item}
-                          </ListItemText>
+                            <HighlightOffIcon />
+                          </IconButton>
                         </ListItem>
                       )}
                     </Draggable>

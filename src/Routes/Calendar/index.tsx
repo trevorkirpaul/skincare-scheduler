@@ -37,13 +37,16 @@ const CalendarRoute: React.FC = () => {
     return <span>loading...</span>
   }
 
-  const handleAddToDay = (day: string, product: string) => {
+  const handleAddToDay = (day: string, product: string, remove: boolean) => {
     setDaysInState((prevDaysInState: any) =>
       prevDaysInState.map((d) => {
         if (d.day === day) {
+          const items = remove
+            ? d.items.filter((di) => di !== product)
+            : [...d.items, product]
           return {
             ...d,
-            items: [...d.items, product],
+            items,
           }
         }
 
@@ -97,6 +100,7 @@ const CalendarRoute: React.FC = () => {
             products={data}
             handleOpenAddProductModal={() => setOpen(d.day)}
             handleReorderProductsForDay={handleReorderProductsForDay}
+            handleAddToDay={handleAddToDay}
           />
         ))}
       </div>
