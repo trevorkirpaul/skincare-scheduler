@@ -12,7 +12,7 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  minWidth: 400,
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
@@ -40,6 +40,7 @@ const AddProductModal: React.FC<P> = ({
 
   const onSubmit = (data: any) => {
     handleAddToDay(open, data.product)
+    handleClose()
   }
 
   return (
@@ -51,20 +52,30 @@ const AddProductModal: React.FC<P> = ({
         aria-describedby="modal-modal-description"
       >
         <Box component="form" onSubmit={handleSubmit(onSubmit)} sx={style}>
-          <Controller
-            name="product"
-            control={control}
-            render={({ field }) => (
-              <Select {...field}>
-                {products.map((d) => (
-                  <MenuItem key={d._id} value={d._id}>
-                    {d.brand} - {d.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            )}
-          />
-          <Button type="submit">Add</Button>
+          <Typography sx={{ mb: 2 }} variant="h5">
+            Add Product:
+          </Typography>
+          <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+            <Controller
+              name="product"
+              control={control}
+              render={({ field }) => (
+                <Select {...field} sx={{ mb: 2 }}>
+                  {products.map((d) => (
+                    <MenuItem key={d._id} value={d._id}>
+                      {d.brand} - {d.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
+            />
+            <Button type="submit" variant="contained" sx={{ mb: 1 }}>
+              Add
+            </Button>
+            <Button type="reset" variant="outlined" onClick={handleClose}>
+              Cancel
+            </Button>
+          </Box>
         </Box>
       </ModalBase>
     </div>

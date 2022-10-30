@@ -51,6 +51,36 @@ const CalendarRoute: React.FC = () => {
       }),
     )
   }
+
+  const reorder = (list, startIndex, endIndex) => {
+    const result = Array.from(list)
+    const [removed] = result.splice(startIndex, 1)
+    result.splice(endIndex, 0, removed)
+    console.log('list', {
+      list,
+      result,
+    })
+    return result
+  }
+
+  const handleReorderProductsForDay = (day: string, result: any) => {
+    setDaysInState((prev: any) =>
+      prev.map((dayInState: any) => {
+        if (dayInState.day === day) {
+          return {
+            ...dayInState,
+            items: reorder(
+              dayInState.items,
+              result.source.index,
+              result.destination.index,
+            ),
+          }
+        } else {
+          return dayInState
+        }
+      }),
+    )
+  }
   return (
     <div>
       <AddProductModal
@@ -66,6 +96,7 @@ const CalendarRoute: React.FC = () => {
             {...d}
             products={data}
             handleOpenAddProductModal={() => setOpen(d.day)}
+            handleReorderProductsForDay={handleReorderProductsForDay}
           />
         ))}
       </div>
