@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Paper, Typography } from '@mui/material'
-import Calendar from 'react-calendar'
 import { Day } from './components/Day'
 import { AddProductModal } from './components/AddProductModal'
 import {
@@ -12,76 +11,124 @@ import {
 } from '@tanstack/react-query'
 import axios from 'axios'
 
+import {
+  useDeleteProductFromScheduleMutation,
+  useGetScheduleQuery,
+  useUpdateProductsOrderForDayMutation,
+  useUpdateScheduleMutation,
+} from '../../shared/redux/services/api'
 import { handleFetchProducts } from '../../shared/ProductAPI'
-
-const days: any = [
-  { day: 'SUN', items: [] },
-  { day: 'MON', items: [] },
-  { day: 'TUE', items: [] },
-  { day: 'WED', items: [] },
-  { day: 'THU', items: [] },
-  { day: 'FRI', items: [] },
-  { day: 'SAT', items: [] },
-]
+import { ScheduledProduct, ScheduleFE } from '../../types'
 
 const CalendarRoute: React.FC = () => {
+  const {
+    data: scheduleData,
+    isLoading: scheduleDataIsLoading,
+    refetch,
+  } = useGetScheduleQuery()
+
+  const [
+    updateSchedule,
+    { isLoading: updateScheduleIsLoading, isSuccess: updateScheduleIsSuccess },
+  ] = useUpdateScheduleMutation()
+
+  const [
+    deleteProductFromSchedule,
+    {
+      isLoading: deleteProductFromScheduleIsLoading,
+      isSuccess: deleteProductFromScheduleIsSuccess,
+    },
+  ] = useDeleteProductFromScheduleMutation()
+
+  const [
+    updateProductsOrder,
+    {
+      isLoading: updateProductsOrderIsLoading,
+      isSuccess: updateProductsOrderIsSuccess,
+    },
+  ] = useUpdateProductsOrderForDayMutation()
+
+  useEffect(() => {
+    if (updateScheduleIsSuccess === true) {
+      refetch()
+    }
+  }, [updateScheduleIsSuccess])
+
+  useEffect(() => {
+    if (deleteProductFromScheduleIsSuccess === true) {
+      refetch()
+    }
+  }, [deleteProductFromScheduleIsSuccess])
+
+  useEffect(() => {
+    if (updateProductsOrderIsSuccess === true) {
+      refetch()
+    }
+  }, [updateProductsOrderIsSuccess])
+
   const { isLoading, isError, data, error } = useQuery(
     ['products'],
     handleFetchProducts,
   )
-  const [daysInState, setDaysInState] = useState(days)
+  const [daysInState, setDaysInState] = useState<null | ScheduleFE>(null)
 
   const [open, setOpen] = useState(null)
 
-  if (!data || isLoading) {
+  useEffect(() => {
+    if (scheduleData) {
+      setDaysInState(scheduleData)
+    }
+  }, [scheduleData, daysInState, setDaysInState])
+
+  if (!data || isLoading || !daysInState) {
     return <span>loading...</span>
   }
 
-  const handleAddToDay = (day: string, product: string, remove?: boolean) => {
-    setDaysInState((prevDaysInState: any) =>
-      prevDaysInState.map((d) => {
-        if (d.day === day) {
-          const items = remove
-            ? d.items.filter((di) => di !== product)
-            : [...d.items, product]
-          return {
-            ...d,
-            items,
-          }
-        }
-
-        return d
-      }),
-    )
+  const handleAddToDay = (
+    dayId: string,
+    productId: string,
+    remove?: boolean,
+  ) => {
+    if (remove) {
+      return deleteProductFromSchedule({ productId, dayId })
+    }
+    updateSchedule({
+      dayId,
+      productId,
+    })
   }
 
-  const reorder = (list, startIndex, endIndex) => {
+  const reorder = (
+    list: ScheduledProduct[] | undefined,
+    startIndex: number,
+    endIndex: number,
+    dayId: string,
+  ) => {
+    if (!list) {
+      throw new Error('error, could not reorder')
+    }
     const result = Array.from(list)
     const [removed] = result.splice(startIndex, 1)
     result.splice(endIndex, 0, removed)
-    console.log('list', {
-      list,
-      result,
+    const items = result.map((x) => x._id)
+
+    updateProductsOrder({
+      dayId,
+      items,
     })
     return result
   }
 
-  const handleReorderProductsForDay = (day: string, result: any) => {
-    setDaysInState((prev: any) =>
-      prev.map((dayInState: any) => {
-        if (dayInState.day === day) {
-          return {
-            ...dayInState,
-            items: reorder(
-              dayInState.items,
-              result.source.index,
-              result.destination.index,
-            ),
-          }
-        } else {
-          return dayInState
-        }
-      }),
+  const handleReorderProductsForDay = (
+    day: string,
+    result: any,
+    dayId: string,
+  ) => {
+    reorder(
+      daysInState.find((d) => d.day === day)?.items,
+      result.source.index,
+      result.destination.index,
+      dayId,
     )
   }
   return (
@@ -95,10 +142,10 @@ const CalendarRoute: React.FC = () => {
       <div style={{ display: 'flex' }}>
         {daysInState.map((d) => (
           <Day
-            key={d.day}
+            key={d.id}
             {...d}
             products={data}
-            handleOpenAddProductModal={() => setOpen(d.day)}
+            handleOpenAddProductModal={() => setOpen(d.id)}
             handleReorderProductsForDay={handleReorderProductsForDay}
             handleAddToDay={handleAddToDay}
           />

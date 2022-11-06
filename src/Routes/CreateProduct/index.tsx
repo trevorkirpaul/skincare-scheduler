@@ -59,8 +59,6 @@ const CreateProductRoute: React.FC = () => {
     },
   }
 
-  console.log('mutation', mutation)
-
   if (mutation.isLoading) {
     return (
       <Box>

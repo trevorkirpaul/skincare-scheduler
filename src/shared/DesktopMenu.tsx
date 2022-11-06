@@ -20,6 +20,7 @@ import SanitizerIcon from '@mui/icons-material/Sanitizer'
 import Breadcrumbs from './Breadcrumbs'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import { useGetUserQuery } from './redux/services/api'
 
 const MenuOptions = [
   {
@@ -111,6 +112,8 @@ interface Props {
 }
 
 const DesktopMenu: React.FC<Props> = ({ children }) => {
+  const { data, error, isLoading } = useGetUserQuery()
+
   const theme = useTheme()
   const [open, setOpen] = React.useState(false)
 

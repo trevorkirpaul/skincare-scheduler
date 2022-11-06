@@ -12,7 +12,7 @@ import AddIcon from '@mui/icons-material/Add'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 
-import type { Product } from '../../../types'
+import type { Product, ScheduledProduct } from '../../../types'
 import { getColorForTypeOfProduct } from '../../../shared/ColorMap'
 
 interface Props {
@@ -20,8 +20,9 @@ interface Props {
   handleOpenAddProductModal: any
   handleReorderProductsForDay: (day: string, result: any) => void
   handleAddToDay: (day: string, product: string, remove: boolean) => void
-  items: string[]
+  items: ScheduledProduct[]
   products: void | Product[] | undefined
+  id: string
 }
 
 const Day: React.FC<Props> = ({
@@ -31,6 +32,7 @@ const Day: React.FC<Props> = ({
   handleReorderProductsForDay,
   products,
   handleAddToDay,
+  id,
 }) => {
   const style = {
     minHeight: '100px',
@@ -50,7 +52,7 @@ const Day: React.FC<Props> = ({
       return
     }
 
-    handleReorderProductsForDay(day, result)
+    handleReorderProductsForDay(day, result, id)
   }
 
   return (
@@ -75,10 +77,10 @@ const Day: React.FC<Props> = ({
             {(providedDrop: any) => (
               <div ref={providedDrop.innerRef} {...providedDrop.droppableProps}>
                 {items.map((item, i) => {
-                  const thisProduct = products?.find((p) => p._id === item)
+                  const thisProduct: Product = item.product[0]
                   return (
                     <Draggable
-                      key={item}
+                      key={item._id}
                       draggableId={`list-${thisProduct?._id}`}
                       index={i}
                     >
@@ -95,12 +97,12 @@ const Day: React.FC<Props> = ({
                           }}
                         >
                           <ListItemText
-                            primary={thisProduct?.name || item}
-                            secondary={thisProduct?.brand || undefined}
+                            primary={thisProduct.name}
+                            secondary={thisProduct.brand}
                           />
 
                           <IconButton
-                            onClick={() => handleAddToDay(day, item, true)}
+                            onClick={() => handleAddToDay(id, item._id, true)}
                             color="primary"
                             aria-label="upload picture"
                             component="label"
