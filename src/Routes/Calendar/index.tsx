@@ -13,6 +13,7 @@ import axios from 'axios'
 
 import {
   useDeleteProductFromScheduleMutation,
+  useGetProductsQuery,
   useGetScheduleQuery,
   useUpdateProductsOrderForDayMutation,
   useUpdateScheduleMutation,
@@ -66,10 +67,10 @@ const CalendarRoute: React.FC = () => {
     }
   }, [updateProductsOrderIsSuccess])
 
-  const { isLoading, isError, data, error } = useQuery(
-    ['products'],
-    handleFetchProducts,
-  )
+  const { data, error, isLoading } = useGetProductsQuery({
+    limit: '2000',
+    skip: '0',
+  })
   const [daysInState, setDaysInState] = useState<null | ScheduleFE>(null)
 
   const [open, setOpen] = useState(null)
@@ -134,7 +135,7 @@ const CalendarRoute: React.FC = () => {
   return (
     <div>
       <AddProductModal
-        products={data}
+        products={data.products}
         open={open}
         handleClose={() => setOpen(null)}
         handleAddToDay={handleAddToDay}
@@ -144,7 +145,7 @@ const CalendarRoute: React.FC = () => {
           <Day
             key={d.id}
             {...d}
-            products={data}
+            products={data.products}
             handleOpenAddProductModal={() => setOpen(d.id)}
             handleReorderProductsForDay={handleReorderProductsForDay}
             handleAddToDay={handleAddToDay}

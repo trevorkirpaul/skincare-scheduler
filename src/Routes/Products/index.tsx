@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import Box from '@mui/material/Box'
 import CardBase from '@mui/material/Card'
 import CardActions from '@mui/material/CardActions'
@@ -19,6 +19,9 @@ import { useSelector, useDispatch } from 'react-redux'
 import { loadProducts } from '../../shared/redux/reducers/ProductReducer'
 import { RootState } from '../../shared/redux/store'
 import { useGetProductsQuery } from '../../shared/redux/services/api'
+
+import Table from './components/Table'
+import { useSearchParams } from 'react-router-dom'
 
 const Card = ({
   name,
@@ -47,18 +50,35 @@ const Card = ({
 )
 
 export const ProductsRoute = () => {
-  const { data, error, isLoading } = useGetProductsQuery()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { data, error, isLoading, refetch } = useGetProductsQuery({
+    limit: searchParams.get('limit'),
+    skip: searchParams.get('skip'),
+  })
 
-  const products = useSelector((state: RootState) => state.products)
-  const dispatch = useDispatch()
+  const params = {
+    limit: searchParams.get('limit') || 10,
+    skip: searchParams.get('skip') || 0,
+  }
+
+  useEffect(() => {
+    refetch()
+    console.log('params', params)
+  }, [params.limit, params.skip])
+
+  const setLimit = (limit: any) => setSearchParams({ ...params, limit })
+  const setSkip = (skip: any) => setSearchParams({ ...params, skip })
 
   if (isLoading) return <span>loading...</span>
 
   return (
     <>
-      {data?.map((prod) => {
-        return <Card key={prod._id} {...prod} />
-      })}
+      <Table
+        products={data.products}
+        pageCount={data.pageCount}
+        setLimit={setLimit}
+        setSkip={setSkip}
+      />
     </>
   )
 }

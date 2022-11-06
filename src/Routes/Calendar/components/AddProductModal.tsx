@@ -32,6 +32,7 @@ const AddProductModal: React.FC<P> = ({
   handleClose,
   products,
 }) => {
+  console.log('prod', products)
   const { control, handleSubmit } = useForm({
     defaultValues: {
       product: '',
@@ -61,7 +62,7 @@ const AddProductModal: React.FC<P> = ({
               control={control}
               render={({ field }) => (
                 <Select {...field} sx={{ mb: 2 }}>
-                  {products.map((d) => (
+                  {products?.map((d) => (
                     <MenuItem key={d._id} value={d._id}>
                       {d.brand} - {d.name}
                     </MenuItem>

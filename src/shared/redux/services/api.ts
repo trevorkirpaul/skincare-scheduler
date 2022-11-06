@@ -22,13 +22,21 @@ interface UpdateProductsOrderArgs {
   items: string[]
 }
 
+interface GetProductsReturn {
+  products: Product[]
+  pageCount: number
+}
+
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
   reducerPath: 'store',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3001/' }),
   endpoints: (builder) => ({
-    getProducts: builder.query<Product[], unknown>({
-      query: () => `products`,
+    getProducts: builder.query<
+      GetProductsReturn[],
+      { limit: string | null; skip: string | null }
+    >({
+      query: (arg) => `products?limit=${arg.limit || 10}&skip=${arg.skip || 0}`,
     }),
     getUser: builder.query<User, unknown>({
       query: () => 'users/635e929a872d2b85c238dcd1', //@TODO replace with arg
@@ -56,7 +64,7 @@ export const api = createApi({
       }),
     }),
     updateProductsOrderForDay: builder.mutation<
-      Pick<UpdateScheduleReturn, 'updateDay'>,
+      Pick<UpdateScheduleReturn, 'updatedDay'>,
       UpdateProductsOrderArgs
     >({
       query: ({ dayId, items }) => ({

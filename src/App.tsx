@@ -1,3 +1,5 @@
+import { ThemeProvider, createTheme } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
 import { useState } from 'react'
 import { createBrowserRouter, RouterProvider, Route } from 'react-router-dom'
 import {
@@ -37,13 +39,22 @@ const router = createBrowserRouter([
   },
 ])
 
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+})
+
 function App() {
   return (
     <Provider store={store}>
       <QueryClientProvider client={queryClient}>
-        <DesktopMenu>
-          <RouterProvider router={router} />
-        </DesktopMenu>
+        <ThemeProvider theme={darkTheme}>
+          <CssBaseline />
+          <DesktopMenu>
+            <RouterProvider router={router} />
+          </DesktopMenu>
+        </ThemeProvider>
       </QueryClientProvider>
     </Provider>
   )
