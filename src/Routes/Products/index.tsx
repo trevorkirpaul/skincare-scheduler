@@ -1,27 +1,14 @@
 import React, { useEffect } from 'react'
 import Box from '@mui/material/Box'
 import CardBase from '@mui/material/Card'
-import CardActions from '@mui/material/CardActions'
 import CardContent from '@mui/material/CardContent'
-import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
-import axios from 'axios'
-import type { Product } from '../../types'
-import { handleFetchProducts } from '../../shared/ProductAPI'
-import { useSelector, useDispatch } from 'react-redux'
-import { loadProducts } from '../../shared/redux/reducers/ProductReducer'
-import { RootState } from '../../shared/redux/store'
+
 import { useGetProductsQuery } from '../../shared/redux/services/api'
 
 import Table from './components/Table'
 import { useSearchParams } from 'react-router-dom'
+import TextField from '../../shared/TextField'
 
 const Card = ({
   name,
@@ -54,6 +41,7 @@ export const ProductsRoute = () => {
   const { data, error, isLoading, refetch } = useGetProductsQuery({
     limit: searchParams.get('limit'),
     skip: searchParams.get('skip'),
+    search: searchParams.get('search'),
   })
 
   const params = {
@@ -72,13 +60,14 @@ export const ProductsRoute = () => {
   if (isLoading) return <span>loading...</span>
 
   return (
-    <>
+    <Box sx={{ paddingTop: '35px' }}>
+      <TextField />
       <Table
         products={data.products}
         pageCount={data.pageCount}
         setLimit={setLimit}
         setSkip={setSkip}
       />
-    </>
+    </Box>
   )
 }

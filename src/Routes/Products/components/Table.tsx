@@ -106,6 +106,31 @@ const Table: React.FC<Props> = ({
       <TableBase sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
+            <TablePagination
+              rowsPerPageOptions={[
+                5, 10, 25 /*, { label: 'All', value: -1 } */,
+              ]}
+              colSpan={4}
+              count={pageCount}
+              rowsPerPage={parseInt(searchParams.get('limit') || 10)}
+              page={1}
+              SelectProps={{
+                inputProps: {
+                  'aria-label': 'rows per page',
+                },
+                native: true,
+              }}
+              onPageChange={(event, nextPage) => {
+                const s = parseInt(searchParams.get('skip')) || 10
+                setSkip(s * nextPage)
+              }}
+              onRowsPerPageChange={({ currentTarget: { value } }) =>
+                setLimit(value)
+              }
+              ActionsComponent={TablePaginationActions}
+            />
+          </TableRow>
+          <TableRow>
             <TableCell>Name</TableCell>
             <TableCell align="right">Brand</TableCell>
             <TableCell align="right">Type</TableCell>
