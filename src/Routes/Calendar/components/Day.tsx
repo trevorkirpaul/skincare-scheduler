@@ -97,13 +97,18 @@ const Day: React.FC<Props> = ({
                           }}
                         >
                           <ListItemText
+                            sx={{
+                              color: 'black',
+                            }}
                             primary={thisProduct.name}
                             secondary={thisProduct.brand}
+                            secondaryTypographyProps={{
+                              style: { color: '#383838' },
+                            }}
                           />
 
                           <IconButton
                             onClick={() => handleAddToDay(id, item._id, true)}
-                            color="primary"
                             aria-label="upload picture"
                             component="label"
                           >
