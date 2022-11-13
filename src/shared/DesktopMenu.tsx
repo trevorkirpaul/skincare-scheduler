@@ -192,7 +192,9 @@ const DesktopMenu: React.FC<Props> = ({ children }) => {
         <Divider />
       </Drawer>
       <div style={{ margin: '100px 50px 0px 100px' }}>
-        <Breadcrumbs />
+        <div style={{ marginBottom: '25px' }}>
+          <Breadcrumbs />
+        </div>
         {children}
       </div>
     </div>

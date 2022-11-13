@@ -60,7 +60,7 @@ export const ProductsRoute = () => {
   if (isLoading) return <span>loading...</span>
 
   return (
-    <Box sx={{ paddingTop: '35px' }}>
+    <Box>
       <TextField />
       <Table
         products={data.products}
