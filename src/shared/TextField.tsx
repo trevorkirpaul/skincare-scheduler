@@ -2,7 +2,12 @@ import * as React from 'react'
 import Box from '@mui/material/Box'
 import TextFieldBase from '@mui/material/TextField'
 
-const TextField = () => {
+interface IProps {
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  label?: string
+}
+
+const TextField: React.FC<IProps> = ({ onChange = () => {}, label = '' }) => {
   return (
     <Box
       component="form"
@@ -12,7 +17,12 @@ const TextField = () => {
       noValidate
       autoComplete="off"
     >
-      <TextFieldBase id="outlined-basic" label="Outlined" variant="outlined" />
+      <TextFieldBase
+        id="outlined-basic"
+        label={label}
+        variant="outlined"
+        onChange={onChange}
+      />
     </Box>
   )
 }

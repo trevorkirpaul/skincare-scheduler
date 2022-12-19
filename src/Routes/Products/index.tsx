@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Box from '@mui/material/Box'
 import CardBase from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
@@ -9,6 +9,7 @@ import { useGetProductsQuery } from '../../shared/redux/services/api'
 import Table from './components/Table'
 import { useSearchParams } from 'react-router-dom'
 import TextField from '../../shared/TextField'
+import { useDebounce } from '../../shared/hooks/useDebounce'
 
 const Card = ({
   name,
@@ -37,17 +38,27 @@ const Card = ({
 )
 
 export const ProductsRoute = () => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearchTerm = useDebounce(searchTerm, 1000)
   const [searchParams, setSearchParams] = useSearchParams()
   const { data, error, isLoading, refetch } = useGetProductsQuery({
     limit: searchParams.get('limit'),
     skip: searchParams.get('skip'),
-    search: searchParams.get('search'),
+    search: debouncedSearchTerm,
   })
+
+  const handleOnChange = ({
+    target: { value },
+  }: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(value)
 
   const params = {
     limit: searchParams.get('limit') || 10,
     skip: searchParams.get('skip') || 0,
   }
+
+  useEffect(() => {
+    console.log('debouncedSearchTerm', debouncedSearchTerm)
+  }, [debouncedSearchTerm])
 
   useEffect(() => {
     refetch()
@@ -61,7 +72,7 @@ export const ProductsRoute = () => {
 
   return (
     <Box>
-      <TextField />
+      <TextField label="Search" onChange={handleOnChange} />
       <Table
         products={data.products}
         pageCount={data.pageCount}
