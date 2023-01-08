@@ -83,8 +83,12 @@ export const api = createApi({
   reducerPath: 'store',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3001/' }),
   endpoints: (builder) => ({
-    getProductCount: builder.query<TransformedGetProductCountReturn, unknown>({
-      query: () => 'products/count',
+    getProductCount: builder.query<
+      TransformedGetProductCountReturn,
+      string | null | undefined
+    >({
+      query: (search) =>
+        search ? `products/count?search=${search}` : `products/count`,
       transformResponse: (responseToTransform: GetProductCountReturn) => {
         return responseToTransform.rows[0]?.exact_count || '0'
       },

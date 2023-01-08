@@ -55,7 +55,8 @@ export const ProductsRoute = () => {
     search: debouncedSearchTerm,
   })
 
-  const { data: fetchedProductCount } = useGetProductCountQuery()
+  const { data: fetchedProductCount } =
+    useGetProductCountQuery(debouncedSearchTerm)
 
   const handleOnChange = ({
     target: { value },
