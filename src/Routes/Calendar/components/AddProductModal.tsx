@@ -5,7 +5,10 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import ModalBase from '@mui/material/Modal'
-import type { Product } from '../../../types'
+import {
+  GetProductsReturn,
+  TransformedGetProductsReturn,
+} from '../../../shared/redux/services/api'
 
 const style = {
   position: 'absolute',
@@ -23,7 +26,7 @@ interface P {
   open: any
   handleClose: any
   handleAddToDay: (day: string, product: string, remove?: boolean) => void
-  products: void | Product[] | undefined
+  products: TransformedGetProductsReturn
 }
 
 const AddProductModal: React.FC<P> = ({
@@ -32,7 +35,6 @@ const AddProductModal: React.FC<P> = ({
   handleClose,
   products,
 }) => {
-  console.log('prod', products)
   const { control, handleSubmit } = useForm({
     defaultValues: {
       product: '',
@@ -43,7 +45,6 @@ const AddProductModal: React.FC<P> = ({
     handleAddToDay(open, data.product)
     handleClose()
   }
-
   return (
     <div>
       <ModalBase
@@ -62,8 +63,8 @@ const AddProductModal: React.FC<P> = ({
               control={control}
               render={({ field }) => (
                 <Select {...field} sx={{ mb: 2 }}>
-                  {products?.map((d) => (
-                    <MenuItem key={d._id} value={d._id}>
+                  {products?.products.map((d) => (
+                    <MenuItem key={d.id} value={d.id}>
                       {d.brand} - {d.name}
                     </MenuItem>
                   ))}

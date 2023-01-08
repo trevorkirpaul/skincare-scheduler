@@ -26,19 +26,19 @@ function TablePaginationActions(props: any) {
 
   const { count, page, rowsPerPage, onPageChange } = props
 
-  const handleFirstPageButtonClick = (event) => {
+  const handleFirstPageButtonClick = (event: any) => {
     onPageChange(event, 0)
   }
 
-  const handleBackButtonClick = (event) => {
+  const handleBackButtonClick = (event: any) => {
     onPageChange(event, page - 1)
   }
 
-  const handleNextButtonClick = (event) => {
+  const handleNextButtonClick = (event: any) => {
     onPageChange(event, page + 1)
   }
 
-  const handleLastPageButtonClick = (event) => {
+  const handleLastPageButtonClick = (event: any) => {
     onPageChange(event, Math.max(0, Math.ceil(count / rowsPerPage) - 1))
   }
 
@@ -85,35 +85,36 @@ function TablePaginationActions(props: any) {
 }
 
 interface Props {
-  products: Product[]
-  pageCount: number
-  limit: number | string
+  products: Product[] | undefined
+  pageCount?: number
   setLimit: (a: any) => void
   setSkip: (a: any) => void
+  limitInState?: string | null
+  skipInState?: string | null
+  pageInState: number
+  setPageInState: React.Dispatch<React.SetStateAction<number>>
 }
 
 const Table: React.FC<Props> = ({
-  products,
-  pageCount,
-  limit,
+  products = [],
+  pageCount = 0,
   setLimit,
   setSkip,
+  limitInState,
+  pageInState,
+  setPageInState,
 }) => {
-  const [searchParams, setSearchParams] = useSearchParams()
-
   return (
     <TableContainer component={Paper}>
       <TableBase sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <TableRow>
             <TablePagination
-              rowsPerPageOptions={[
-                5, 10, 25 /*, { label: 'All', value: -1 } */,
-              ]}
+              rowsPerPageOptions={[10]}
               colSpan={4}
               count={pageCount}
-              rowsPerPage={parseInt(searchParams.get('limit') || 10)}
-              page={1}
+              rowsPerPage={parseInt(limitInState || '10')}
+              page={pageInState}
               SelectProps={{
                 inputProps: {
                   'aria-label': 'rows per page',
@@ -121,8 +122,10 @@ const Table: React.FC<Props> = ({
                 native: true,
               }}
               onPageChange={(event, nextPage) => {
-                const s = parseInt(searchParams.get('skip')) || 10
-                setSkip(s * nextPage)
+                const currentLimit = parseInt(limitInState || '10')
+                const nextSkip = nextPage * currentLimit
+                setSkip(nextSkip)
+                setPageInState(nextPage)
               }}
               onRowsPerPageChange={({ currentTarget: { value } }) =>
                 setLimit(value)
@@ -140,7 +143,7 @@ const Table: React.FC<Props> = ({
         <TableBody>
           {products.map((product) => (
             <TableRow
-              key={product._id}
+              key={product.id}
               sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
             >
               <TableCell component="th" scope="row">
@@ -148,20 +151,18 @@ const Table: React.FC<Props> = ({
               </TableCell>
               <TableCell align="right">{product.brand}</TableCell>
               <TableCell align="right">{product.type || 'n/a'}</TableCell>
-              <TableCell align="right">{product._id}</TableCell>
+              <TableCell align="right">{product.id}</TableCell>
             </TableRow>
           ))}
         </TableBody>
         <TableFooter>
           <TableRow>
             <TablePagination
-              rowsPerPageOptions={[
-                5, 10, 25 /*, { label: 'All', value: -1 } */,
-              ]}
+              rowsPerPageOptions={[10]}
               colSpan={4}
               count={pageCount}
-              rowsPerPage={parseInt(searchParams.get('limit') || 10)}
-              page={1}
+              rowsPerPage={parseInt(limitInState || '10')}
+              page={pageInState}
               SelectProps={{
                 inputProps: {
                   'aria-label': 'rows per page',
@@ -169,8 +170,10 @@ const Table: React.FC<Props> = ({
                 native: true,
               }}
               onPageChange={(event, nextPage) => {
-                const s = parseInt(searchParams.get('skip')) || 10
-                setSkip(s * nextPage)
+                const currentLimit = parseInt(limitInState || '10')
+                const nextSkip = nextPage * currentLimit
+                setSkip(nextSkip)
+                setPageInState(nextPage)
               }}
               onRowsPerPageChange={({ currentTarget: { value } }) =>
                 setLimit(value)

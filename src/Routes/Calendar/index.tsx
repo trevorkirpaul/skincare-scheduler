@@ -20,6 +20,7 @@ import {
 } from '../../shared/redux/services/api'
 import { handleFetchProducts } from '../../shared/ProductAPI'
 import { ScheduledProduct, ScheduleFE } from '../../types'
+import type { ScheduleValues } from '../../shared/redux/services/api'
 
 const CalendarRoute: React.FC = () => {
   const {
@@ -67,11 +68,15 @@ const CalendarRoute: React.FC = () => {
     }
   }, [updateProductsOrderIsSuccess])
 
-  const { data, error, isLoading } = useGetProductsQuery({
+  const {
+    data: products,
+    error,
+    isLoading,
+  } = useGetProductsQuery({
     limit: '2000',
     skip: '0',
   })
-  const [daysInState, setDaysInState] = useState<null | ScheduleFE>(null)
+  const [daysInState, setDaysInState] = useState<null | ScheduleValues>(null)
 
   const [open, setOpen] = useState(null)
 
@@ -81,7 +86,7 @@ const CalendarRoute: React.FC = () => {
     }
   }, [scheduleData, daysInState, setDaysInState])
 
-  if (!data || isLoading || !daysInState) {
+  if (!products || isLoading || !daysInState) {
     return <span>loading...</span>
   }
 
@@ -90,13 +95,14 @@ const CalendarRoute: React.FC = () => {
     productId: string,
     remove?: boolean,
   ) => {
-    if (remove) {
-      return deleteProductFromSchedule({ productId, dayId })
-    }
-    updateSchedule({
-      dayId,
-      productId,
-    })
+    console.log('clicked')
+    // if (remove) {
+    //   return deleteProductFromSchedule({ productId, dayId })
+    // }
+    // updateSchedule({
+    //   dayId,
+    //   productId,
+    // })
   }
 
   const reorder = (
@@ -125,28 +131,29 @@ const CalendarRoute: React.FC = () => {
     result: any,
     dayId: string,
   ) => {
-    reorder(
-      daysInState.find((d) => d.day === day)?.items,
-      result.source.index,
-      result.destination.index,
-      dayId,
-    )
+    console.log('removed for now')
+    // reorder(
+    //   daysInState.find((d) => d.day === day)?.items,
+    //   result.source.index,
+    //   result.destination.index,
+    //   dayId,
+    // )
   }
   return (
     <div>
       <AddProductModal
-        products={data.products}
+        products={products}
         open={open}
         handleClose={() => setOpen(null)}
         handleAddToDay={handleAddToDay}
       />
       <div style={{ display: 'flex' }}>
-        {daysInState.map((d) => (
+        {Object.keys(daysInState).map((day) => (
           <Day
-            key={d.id}
-            {...d}
-            products={data.products}
-            handleOpenAddProductModal={() => setOpen(d.id)}
+            key={day}
+            day={day}
+            items={[...daysInState[day]]}
+            handleOpenAddProductModal={() => setOpen(day)}
             handleReorderProductsForDay={handleReorderProductsForDay}
             handleAddToDay={handleAddToDay}
           />
