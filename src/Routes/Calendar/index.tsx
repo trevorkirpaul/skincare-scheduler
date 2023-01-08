@@ -15,6 +15,7 @@ import {
   useDeleteProductFromScheduleMutation,
   useGetProductsQuery,
   useGetScheduleQuery,
+  useGetUserQuery,
   useUpdateProductsOrderForDayMutation,
   useUpdateScheduleMutation,
 } from '../../shared/redux/services/api'
@@ -23,6 +24,8 @@ import { ScheduledProduct, ScheduleFE } from '../../types'
 import type { ScheduleValues } from '../../shared/redux/services/api'
 
 const CalendarRoute: React.FC = () => {
+  const { data: userData } = useGetUserQuery()
+
   const {
     data: scheduleData,
     isLoading: scheduleDataIsLoading,
@@ -91,18 +94,20 @@ const CalendarRoute: React.FC = () => {
   }
 
   const handleAddToDay = (
-    dayId: string,
+    day: string,
     productId: string,
-    remove?: boolean,
+    idToRemove?: string | number,
   ) => {
-    console.log('clicked')
-    // if (remove) {
-    //   return deleteProductFromSchedule({ productId, dayId })
-    // }
-    // updateSchedule({
-    //   dayId,
-    //   productId,
-    // })
+    if (!userData) return
+    if (idToRemove) {
+      return deleteProductFromSchedule({ idToRemove })
+    }
+    updateSchedule({
+      day,
+      productId,
+      userId: `${userData.id}`,
+      isAm: true,
+    })
   }
 
   const reorder = (

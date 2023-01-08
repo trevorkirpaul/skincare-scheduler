@@ -18,7 +18,11 @@ import { getColorForTypeOfProduct } from '../../../shared/ColorMap'
 interface Props extends ScheduledProduct {
   handleOpenAddProductModal: any
   handleReorderProductsForDay: (day: string, result: any) => void
-  handleAddToDay: (day: string, product: string, remove: boolean) => void
+  handleAddToDay: (
+    day: string,
+    product: string,
+    idToRemove?: number | string,
+  ) => void
   items: ScheduledProduct[]
   products: void | Product[] | undefined
 }
@@ -104,7 +108,9 @@ const Day: React.FC<Props> = ({
                           />
 
                           <IconButton
-                            onClick={() => handleAddToDay(id, item._id, true)}
+                            onClick={() =>
+                              handleAddToDay(day, `${item.product_id}`, item.id)
+                            }
                             aria-label="upload picture"
                             component="label"
                           >

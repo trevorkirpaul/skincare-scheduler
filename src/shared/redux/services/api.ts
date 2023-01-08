@@ -13,8 +13,10 @@ interface UpdateScheduleReturn {
 }
 
 interface UpdateScheduleArgs {
-  dayId: string
+  day: string
   productId: string
+  userId?: string
+  isAm: boolean
 }
 
 interface UpdateProductsOrderArgs {
@@ -121,13 +123,10 @@ export const api = createApi({
         convertGetScheduleResponse(response),
     }),
     updateSchedule: builder.mutation<UpdateScheduleReturn, UpdateScheduleArgs>({
-      query: ({ dayId, productId }) => ({
-        url: 'users/schedule',
+      query: (body) => ({
+        url: 'scheduled-products',
         method: 'POST',
-        body: {
-          dayId,
-          productId,
-        },
+        body,
       }),
     }),
     updateProductsOrderForDay: builder.mutation<
@@ -145,15 +144,11 @@ export const api = createApi({
     }),
     deleteProductFromSchedule: builder.mutation<
       UpdateScheduleReturn,
-      UpdateScheduleArgs
+      { idToRemove: string | number }
     >({
-      query: ({ dayId, productId }) => ({
-        url: 'users/schedule',
+      query: ({ idToRemove }) => ({
+        url: `scheduled-products/${idToRemove}`,
         method: 'DELETE',
-        body: {
-          dayId,
-          productId,
-        },
       }),
     }),
   }),
