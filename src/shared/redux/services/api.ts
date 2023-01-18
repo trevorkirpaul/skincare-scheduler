@@ -20,8 +20,9 @@ interface UpdateScheduleArgs {
 }
 
 interface UpdateProductsOrderArgs {
-  dayId: string
-  items: string[]
+  day: string
+  userId: string
+  items: number[]
 }
 
 export interface GetProductsReturn {
@@ -130,16 +131,23 @@ export const api = createApi({
       }),
     }),
     updateProductsOrderForDay: builder.mutation<
-      Pick<UpdateScheduleReturn, 'updatedDay'>,
+      number[],
       UpdateProductsOrderArgs
     >({
-      query: ({ dayId, items }) => ({
+      query: ({ day, items, userId }) => ({
         url: 'users/day/order',
         method: 'POST',
         body: {
-          dayId,
+          day,
           items,
+          userId,
         },
+      }),
+    }),
+    getAllScheduledProductOrders: builder.query<any, { userId?: string }>({
+      query: ({ userId }) => ({
+        url: `users/all_orders/${userId}`,
+        method: 'GET',
       }),
     }),
     deleteProductFromSchedule: builder.mutation<
@@ -164,4 +172,5 @@ export const {
   useUpdateScheduleMutation,
   useDeleteProductFromScheduleMutation,
   useUpdateProductsOrderForDayMutation,
+  useGetAllScheduledProductOrdersQuery,
 } = api

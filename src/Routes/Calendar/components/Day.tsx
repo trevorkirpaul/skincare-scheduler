@@ -54,7 +54,7 @@ const Day: React.FC<Props> = ({
       return
     }
 
-    handleReorderProductsForDay(day, result, id)
+    handleReorderProductsForDay(day, result)
   }
 
   return (
