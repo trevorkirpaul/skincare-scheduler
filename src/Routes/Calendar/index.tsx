@@ -74,6 +74,7 @@ const CalendarRoute: React.FC = () => {
   useEffect(() => {
     if (updateScheduleIsSuccess === true) {
       refetch()
+      handleRefetchAllScheduledProductOrdersData()
     }
   }, [updateScheduleIsSuccess])
 
@@ -165,7 +166,10 @@ const CalendarRoute: React.FC = () => {
     return thisScheduledProductOrder.scheduled_product_ids.map((x) =>
       items.find((i) => i.id === x),
     )
-    return items
+  }
+
+  if (!allScheduledProductOrdersData) {
+    return <div>loading...</div>
   }
 
   return (

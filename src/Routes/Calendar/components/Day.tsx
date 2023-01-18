@@ -80,9 +80,10 @@ const Day: React.FC<Props> = ({
               <div ref={providedDrop.innerRef} {...providedDrop.droppableProps}>
                 {items.map((item, i) => {
                   const thisProduct: ScheduledProduct = item
+                  if (!thisProduct) return null
                   return (
                     <Draggable
-                      key={item.id}
+                      key={item?.id}
                       draggableId={`list-${thisProduct?.id}`}
                       index={i}
                     >
