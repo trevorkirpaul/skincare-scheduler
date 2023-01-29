@@ -7,6 +7,8 @@ import type {
   Day,
 } from '../../../types'
 
+type GetIngredientsForScheduledProductsReturn = any[]
+
 interface UpdateScheduleReturn {
   newScheduledProduct: ScheduledProduct
   updatedDay: Day
@@ -159,6 +161,15 @@ export const api = createApi({
         method: 'DELETE',
       }),
     }),
+    getIngredientsForScheduledProducts: builder.query<
+      GetIngredientsForScheduledProductsReturn,
+      number | string
+    >({
+      query: (id) => ({
+        url: `scheduled-products/ingredients/${id}`,
+        method: 'GET',
+      }),
+    }),
   }),
 })
 
@@ -173,4 +184,5 @@ export const {
   useDeleteProductFromScheduleMutation,
   useUpdateProductsOrderForDayMutation,
   useGetAllScheduledProductOrdersQuery,
+  useGetIngredientsForScheduledProductsQuery,
 } = api
