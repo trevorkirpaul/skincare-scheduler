@@ -20,9 +20,15 @@ import SanitizerIcon from '@mui/icons-material/Sanitizer'
 import Breadcrumbs from './Breadcrumbs'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import { Home } from '@mui/icons-material'
 import { useGetUserQuery } from './redux/services/api'
 
 const MenuOptions = [
+  {
+    label: 'Dashboard',
+    route: '/',
+    icon: <Home />,
+  },
   {
     label: 'Add Product',
     route: '/products/new',

@@ -4,7 +4,10 @@ import CardBase from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 
-import { useGetProductsQuery } from '../../shared/redux/services/api'
+import {
+  useGetProductsQuery,
+  useGetProductCountQuery,
+} from '../../shared/redux/services/api'
 
 import Table from './components/Table'
 import { useSearchParams } from 'react-router-dom'
@@ -41,11 +44,19 @@ export const ProductsRoute = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 1000)
   const [searchParams, setSearchParams] = useSearchParams()
+
+  const [limitInState, setLimitInState] = useState(null)
+  const [skipInState, setSkipInState] = useState(null)
+  const [pageInState, setPageInState] = useState(0)
+
   const { data, error, isLoading, refetch } = useGetProductsQuery({
-    limit: searchParams.get('limit'),
-    skip: searchParams.get('skip'),
+    limit: limitInState,
+    skip: skipInState,
     search: debouncedSearchTerm,
   })
+
+  const { data: fetchedProductCount } =
+    useGetProductCountQuery(debouncedSearchTerm)
 
   const handleOnChange = ({
     target: { value },
@@ -57,27 +68,30 @@ export const ProductsRoute = () => {
   }
 
   useEffect(() => {
-    console.log('debouncedSearchTerm', debouncedSearchTerm)
+    // console.log('debouncedSearchTerm', debouncedSearchTerm)
   }, [debouncedSearchTerm])
 
   useEffect(() => {
     refetch()
-    console.log('params', params)
   }, [params.limit, params.skip])
 
-  const setLimit = (limit: any) => setSearchParams({ ...params, limit })
-  const setSkip = (skip: any) => setSearchParams({ ...params, skip })
+  const setLimit = (limit: any) => setLimitInState(limit)
+  const setSkip = (skip: any) => setSkipInState(skip)
 
-  if (isLoading) return <span>loading...</span>
+  if (isLoading || !data) return <span>loading...</span>
 
   return (
     <Box>
       <TextField label="Search" onChange={handleOnChange} />
       <Table
         products={data.products}
-        pageCount={data.pageCount}
+        pageCount={Number(fetchedProductCount || 0)}
         setLimit={setLimit}
         setSkip={setSkip}
+        skipInState={skipInState}
+        limitInState={limitInState}
+        pageInState={pageInState}
+        setPageInState={setPageInState}
       />
     </Box>
   )

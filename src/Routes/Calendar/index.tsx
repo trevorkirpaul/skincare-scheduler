@@ -15,13 +15,29 @@ import {
   useDeleteProductFromScheduleMutation,
   useGetProductsQuery,
   useGetScheduleQuery,
+  useGetUserQuery,
   useUpdateProductsOrderForDayMutation,
   useUpdateScheduleMutation,
+  useGetAllScheduledProductOrdersQuery,
 } from '../../shared/redux/services/api'
 import { handleFetchProducts } from '../../shared/ProductAPI'
 import { ScheduledProduct, ScheduleFE } from '../../types'
+import type { ScheduleValues } from '../../shared/redux/services/api'
+
+const moveItemsInArray = (
+  arrayToOperateOn: any[],
+  from: number,
+  to: number,
+) => {
+  const itemToMove = [...arrayToOperateOn].splice(from, 1)[0]
+  const r = arrayToOperateOn.filter((x) => x !== itemToMove)
+  r.splice(to, 0, itemToMove)
+  return r
+}
 
 const CalendarRoute: React.FC = () => {
+  const { data: userData } = useGetUserQuery()
+
   const {
     data: scheduleData,
     isLoading: scheduleDataIsLoading,
@@ -32,6 +48,12 @@ const CalendarRoute: React.FC = () => {
     updateSchedule,
     { isLoading: updateScheduleIsLoading, isSuccess: updateScheduleIsSuccess },
   ] = useUpdateScheduleMutation()
+
+  const {
+    data: allScheduledProductOrdersData,
+    isLoading: allScheduledProductOrdersIsLoading,
+    refetch: handleRefetchAllScheduledProductOrdersData,
+  } = useGetAllScheduledProductOrdersQuery({ userId: `${userData?.id || 1}` })
 
   const [
     deleteProductFromSchedule,
@@ -52,6 +74,7 @@ const CalendarRoute: React.FC = () => {
   useEffect(() => {
     if (updateScheduleIsSuccess === true) {
       refetch()
+      handleRefetchAllScheduledProductOrdersData()
     }
   }, [updateScheduleIsSuccess])
 
@@ -64,14 +87,19 @@ const CalendarRoute: React.FC = () => {
   useEffect(() => {
     if (updateProductsOrderIsSuccess === true) {
       refetch()
+      handleRefetchAllScheduledProductOrdersData()
     }
   }, [updateProductsOrderIsSuccess])
 
-  const { data, error, isLoading } = useGetProductsQuery({
+  const {
+    data: products,
+    error,
+    isLoading,
+  } = useGetProductsQuery({
     limit: '2000',
     skip: '0',
   })
-  const [daysInState, setDaysInState] = useState<null | ScheduleFE>(null)
+  const [daysInState, setDaysInState] = useState<null | ScheduleValues>(null)
 
   const [open, setOpen] = useState(null)
 
@@ -81,72 +109,84 @@ const CalendarRoute: React.FC = () => {
     }
   }, [scheduleData, daysInState, setDaysInState])
 
-  if (!data || isLoading || !daysInState) {
+  if (!products || isLoading || !daysInState) {
     return <span>loading...</span>
   }
 
   const handleAddToDay = (
-    dayId: string,
+    day: string,
     productId: string,
-    remove?: boolean,
+    idToRemove?: string | number,
   ) => {
-    if (remove) {
-      return deleteProductFromSchedule({ productId, dayId })
+    if (!userData) return
+    if (idToRemove) {
+      return deleteProductFromSchedule({ idToRemove })
     }
     updateSchedule({
-      dayId,
+      day,
       productId,
+      userId: `${userData.id}`,
+      isAm: true,
     })
   }
 
-  const reorder = (
-    list: ScheduledProduct[] | undefined,
-    startIndex: number,
-    endIndex: number,
-    dayId: string,
-  ) => {
-    if (!list) {
-      throw new Error('error, could not reorder')
+  const reorder = async (startIndex: number, endIndex: number, day: string) => {
+    if (!userData) {
+      throw new Error('no user data')
     }
-    const result = Array.from(list)
-    const [removed] = result.splice(startIndex, 1)
-    result.splice(endIndex, 0, removed)
-    const items = result.map((x) => x._id)
 
-    updateProductsOrder({
-      dayId,
-      items,
-    })
-    return result
+    const thisScheduledProductOrder = allScheduledProductOrdersData.find(
+      (aspod: any) => aspod.day === day,
+    )
+
+    const items = thisScheduledProductOrder.scheduled_product_ids
+
+    const newItems = moveItemsInArray([...items], startIndex, endIndex)
+
+    try {
+      await updateProductsOrder({
+        day,
+        items: newItems,
+        userId: `${userData.id}`,
+      })
+    } catch (e) {
+      console.log('e', e)
+    }
   }
 
-  const handleReorderProductsForDay = (
-    day: string,
-    result: any,
-    dayId: string,
-  ) => {
-    reorder(
-      daysInState.find((d) => d.day === day)?.items,
-      result.source.index,
-      result.destination.index,
-      dayId,
+  const handleReorderProductsForDay = (day: string, result: any) => {
+    reorder(result.source.index, result.destination.index, day)
+  }
+
+  const itemsInOrder = (items: any, day: string) => {
+    const thisScheduledProductOrder = allScheduledProductOrdersData.find(
+      (aspod: any) => aspod.day === day,
+    )
+    if (!thisScheduledProductOrder) return items
+    return thisScheduledProductOrder.scheduled_product_ids.map((x) =>
+      items.find((i) => i.id === x),
     )
   }
+
+  if (!allScheduledProductOrdersData) {
+    return <div>loading...</div>
+  }
+
   return (
     <div>
       <AddProductModal
-        products={data.products}
+        products={products}
         open={open}
         handleClose={() => setOpen(null)}
         handleAddToDay={handleAddToDay}
       />
       <div style={{ display: 'flex' }}>
-        {daysInState.map((d) => (
+        {Object.keys(daysInState).map((day) => (
           <Day
-            key={d.id}
-            {...d}
-            products={data.products}
-            handleOpenAddProductModal={() => setOpen(d.id)}
+            key={day}
+            day={day}
+            items={itemsInOrder([...daysInState[day]], day)}
+            handleOpenAddProductModal={() => setOpen(day)}
             handleReorderProductsForDay={handleReorderProductsForDay}
             handleAddToDay={handleAddToDay}
           />

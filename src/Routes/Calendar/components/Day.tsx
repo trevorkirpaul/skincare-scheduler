@@ -15,14 +15,16 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
 import type { Product, ScheduledProduct } from '../../../types'
 import { getColorForTypeOfProduct } from '../../../shared/ColorMap'
 
-interface Props {
-  day: string
+interface Props extends ScheduledProduct {
   handleOpenAddProductModal: any
   handleReorderProductsForDay: (day: string, result: any) => void
-  handleAddToDay: (day: string, product: string, remove: boolean) => void
+  handleAddToDay: (
+    day: string,
+    product: string,
+    idToRemove?: number | string,
+  ) => void
   items: ScheduledProduct[]
   products: void | Product[] | undefined
-  id: string
 }
 
 const Day: React.FC<Props> = ({
@@ -52,7 +54,7 @@ const Day: React.FC<Props> = ({
       return
     }
 
-    handleReorderProductsForDay(day, result, id)
+    handleReorderProductsForDay(day, result)
   }
 
   return (
@@ -77,11 +79,12 @@ const Day: React.FC<Props> = ({
             {(providedDrop: any) => (
               <div ref={providedDrop.innerRef} {...providedDrop.droppableProps}>
                 {items.map((item, i) => {
-                  const thisProduct: Product = item.product[0]
+                  const thisProduct: ScheduledProduct = item
+                  if (!thisProduct) return null
                   return (
                     <Draggable
-                      key={item._id}
-                      draggableId={`list-${thisProduct?._id}`}
+                      key={item?.id}
+                      draggableId={`list-${thisProduct?.id}`}
                       index={i}
                     >
                       {(provided: any) => (
@@ -90,9 +93,7 @@ const Day: React.FC<Props> = ({
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           sx={{
-                            background: getColorForTypeOfProduct(
-                              thisProduct?.type,
-                            ),
+                            background: getColorForTypeOfProduct(),
                             alignItems: 'baseline',
                           }}
                         >
@@ -108,7 +109,9 @@ const Day: React.FC<Props> = ({
                           />
 
                           <IconButton
-                            onClick={() => handleAddToDay(id, item._id, true)}
+                            onClick={() =>
+                              handleAddToDay(day, `${item.product_id}`, item.id)
+                            }
                             aria-label="upload picture"
                             component="label"
                           >

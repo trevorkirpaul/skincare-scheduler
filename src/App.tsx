@@ -15,6 +15,7 @@ import { store } from './shared/redux/store'
 import { ProductsRoute } from './Routes/Products'
 import { CreateProductRoute } from './Routes/CreateProduct'
 import { CalendarRoute } from './Routes/Calendar'
+import { DashboardRoute } from './Routes/Dashboard'
 import DesktopMenu from './shared/DesktopMenu'
 
 // Create a client
@@ -23,7 +24,7 @@ const queryClient = new QueryClient()
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <div>Hello world!!!</div>,
+    element: <DashboardRoute />,
   },
   {
     path: '/products',
