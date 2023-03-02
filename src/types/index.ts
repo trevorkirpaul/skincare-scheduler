@@ -6,15 +6,6 @@ export interface Product {
   type: string
 }
 
-export interface ScheduledProduct {
-  day: string
-  brand: string
-  is_am: boolean
-  name: string
-  id: number
-  product_id: number
-}
-
 export interface Day {
   day: string
   _id: string
@@ -29,8 +20,8 @@ export interface Schedule {
 
 export interface User {
   email: string
-  // schedules: Schedule[]
   id: number
+  profile_id?: string
 }
 
 export interface DayFE {

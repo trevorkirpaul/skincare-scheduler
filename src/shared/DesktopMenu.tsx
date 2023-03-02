@@ -20,10 +20,16 @@ import SanitizerIcon from '@mui/icons-material/Sanitizer'
 import Breadcrumbs from './Breadcrumbs'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
-import { Home } from '@mui/icons-material'
+import { Home, Person2, Person2Outlined } from '@mui/icons-material'
 import { useGetUserQuery } from './redux/services/api'
+import { Link } from 'react-router-dom'
 
 const MenuOptions = [
+  {
+    label: 'Login',
+    route: '/auth',
+    icon: <Person2Outlined />,
+  },
   {
     label: 'Dashboard',
     route: '/',
@@ -170,28 +176,29 @@ const DesktopMenu: React.FC<Props> = ({ children }) => {
               disablePadding
               sx={{ display: 'block' }}
             >
-              <ListItemButton
-                href={menuOption.route}
-                sx={{
-                  minHeight: 48,
-                  justifyContent: open ? 'initial' : 'center',
-                  px: 2.5,
-                }}
-              >
-                <ListItemIcon
+              <Link to={menuOption.route}>
+                <ListItemButton
                   sx={{
-                    minWidth: 0,
-                    mr: open ? 3 : 'auto',
-                    justifyContent: 'center',
+                    minHeight: 48,
+                    justifyContent: open ? 'initial' : 'center',
+                    px: 2.5,
                   }}
                 >
-                  {menuOption.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={menuOption.label}
-                  sx={{ opacity: open ? 1 : 0 }}
-                />
-              </ListItemButton>
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? 3 : 'auto',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {menuOption.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={menuOption.label}
+                    sx={{ opacity: open ? 1 : 0 }}
+                  />
+                </ListItemButton>
+              </Link>
             </ListItem>
           ))}
         </List>

@@ -85,7 +85,6 @@ type TransformedGetProductCountReturn = string
 
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
-  reducerPath: 'store',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3001/' }),
   endpoints: (builder) => ({
     getProductCount: builder.query<
@@ -117,6 +116,28 @@ export const api = createApi({
     }),
     getUser: builder.query<User, unknown>({
       query: () => 'users/admin@scs.com', //@TODO replace with arg
+    }),
+    createUser: builder.mutation<User, unknown>({
+      query: (body) => ({
+        url: 'users',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (responseToTransform: any) => {
+        console.log(responseToTransform)
+        return responseToTransform
+      },
+    }),
+    loginUser: builder.mutation<User, unknown>({
+      query: (body) => ({
+        url: 'auth/login',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (responseToTransform: any) => {
+        console.log(responseToTransform)
+        return responseToTransform
+      },
     }),
     getSchedule: builder.query<ScheduleValues, unknown>({
       query: () => 'users/schedule/admin@scs.com', //@TODO replace with arg
@@ -185,4 +206,6 @@ export const {
   useUpdateProductsOrderForDayMutation,
   useGetAllScheduledProductOrdersQuery,
   useGetIngredientsForScheduledProductsQuery,
+  useCreateUserMutation,
+  useLoginUserMutation,
 } = api
