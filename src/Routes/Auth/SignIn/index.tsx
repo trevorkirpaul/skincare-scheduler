@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import {
   Paper,
   Button,
@@ -9,9 +9,14 @@ import {
   CircularProgress,
 } from '@mui/material'
 import { useForm, Controller } from 'react-hook-form'
-import { useLoginUserMutation } from '../../../shared/redux/services/api'
+import { useNavigate } from 'react-router-dom'
+
+import {
+  useLazyLogoutUserQuery,
+  useLoginUserMutation,
+} from '../../../shared/redux/services/api'
 import { loginIsSuccessful } from '../../../shared/redux/reducers/UserReducer'
-import type { RootState } from '../../../shared/redux/store'
+import { getCachedUserData } from '../../../shared/getCachedUserData'
 
 const styles = {
   p: {
@@ -20,9 +25,25 @@ const styles = {
 }
 
 const SignIn: React.FC = () => {
+  const navigate = useNavigate()
   const [loginUser, { isLoading, isSuccess, ...rest }] = useLoginUserMutation()
   const dispatch = useDispatch()
-  const userFromStore = useSelector((state: RootState) => state.user.info)
+  const cachedUserData = getCachedUserData()
+
+  // sign out
+  const [triggerLogout] = useLazyLogoutUserQuery()
+  const handleLogOut = async () => {
+    try {
+      const logoutResponse = await triggerLogout('logout')
+
+      if (logoutResponse.status === 'fulfilled') {
+        localStorage.clear()
+        navigate('/') // @TODO: change to a 'successfully signed out page'
+      }
+    } catch (e) {
+      throw new Error('Failed to logout', e)
+    }
+  }
 
   const {
     register,
@@ -54,10 +75,15 @@ const SignIn: React.FC = () => {
     )
   }
 
-  if (userFromStore?.email) {
+  if (cachedUserData && cachedUserData.email) {
     return (
       <Box>
-        <Typography>Email: {userFromStore.email}</Typography>
+        <Typography sx={{ mb: 5 }}>Email: {cachedUserData.email}</Typography>
+        <Box>
+          <Button variant="outlined" onClick={handleLogOut}>
+            Log Out
+          </Button>
+        </Box>
       </Box>
     )
   }

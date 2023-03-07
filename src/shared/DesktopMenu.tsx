@@ -23,6 +23,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
 import { Home, Person2, Person2Outlined } from '@mui/icons-material'
 import { useGetUserQuery } from './redux/services/api'
 import { Link } from 'react-router-dom'
+import { getCachedUserData } from './getCachedUserData'
 
 const MenuOptions = [
   {
@@ -124,7 +125,11 @@ interface Props {
 }
 
 const DesktopMenu: React.FC<Props> = ({ children }) => {
-  const { data, error, isLoading } = useGetUserQuery()
+  const cachedUserData = getCachedUserData()
+
+  const { data, error, isLoading } = useGetUserQuery('get-user', {
+    skip: cachedUserData === false,
+  })
 
   const theme = useTheme()
   const [open, setOpen] = React.useState(false)
