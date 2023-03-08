@@ -128,16 +128,23 @@ export const api = createApi({
     }),
     getUser: builder.query<User, unknown>({
       query: () => {
-        const cachedUserData: any = localStorage.getItem('cached-user-data')
+        try {
+          const cachedUserData: any = localStorage.getItem('cached-user-data')
+          const parsedCachedUserData = cachedUserData
+            ? JSON.parse(cachedUserData)
+            : null
 
-        if (!cachedUserData || !cachedUserData.email) {
-          throw new Error('')
-        }
+          if (!cachedUserData || !parsedCachedUserData?.email) {
+            throw new Error('Error: could not get user data from local storage')
+          }
 
-        return {
-          url: `users/${cachedUserData.email}`,
-          credentials: 'include',
-          headers: createHeaders(),
+          return {
+            url: `users/${parsedCachedUserData.email}`,
+            credentials: 'include',
+            headers: createHeaders(),
+          }
+        } catch (error) {
+          throw new Error('Error: could not get user from API')
         }
       },
     }),
