@@ -10,20 +10,35 @@ import {
 import React from 'react'
 import AddIcon from '@mui/icons-material/Add'
 import HighlightOffIcon from '@mui/icons-material/HighlightOff'
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd'
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  OnDragEndResponder,
+  DropResult,
+} from 'react-beautiful-dnd'
 
 import type { Product, ScheduledProduct } from '../../../types'
 import { getColorForTypeOfProduct } from '../../../shared/ColorMap'
+import { ScheduledProductDragAndDrop } from './ScheduledProductDragAndDrop'
 
 interface Props extends ScheduledProduct {
-  handleOpenAddProductModal: any
-  handleReorderProductsForDay: (day: string, result: any) => void
-  handleAddToDay: (
+  handleOpenAddProductModal: (x: { day: string; is_am: boolean }) => void
+  handleReorderProductsForDay: (
     day: string,
-    product: string,
-    idToRemove?: number | string,
+    result: any,
+    is_am: boolean,
   ) => void
-  items: ScheduledProduct[]
+  handleAddToDay: (args: {
+    day: string
+    productId: string
+    idToRemove?: string | number
+    is_am: boolean
+  }) => void
+  items: {
+    am: ScheduledProduct[]
+    pm: ScheduledProduct[]
+  }
   products: void | Product[] | undefined
 }
 
@@ -32,7 +47,6 @@ const Day: React.FC<Props> = ({
   day = 'SUN',
   handleOpenAddProductModal,
   handleReorderProductsForDay,
-  products,
   handleAddToDay,
   id,
 }) => {
@@ -45,89 +59,71 @@ const Day: React.FC<Props> = ({
     margin: '0px 5px',
   }
 
-  function onDragEnd(result: any) {
-    if (!result.destination) {
+  function onDragEnd(result: DropResult, is_am: boolean) {
+    if (
+      !result.destination ||
+      result.destination.index === result.source.index
+    ) {
       return
     }
 
-    if (result.destination.index === result.source.index) {
-      return
-    }
-
-    handleReorderProductsForDay(day, result)
+    handleReorderProductsForDay(day, result, is_am)
   }
+
+  const amItems = items.am || []
+  const pmItems = items.pm || []
 
   return (
     <div style={style}>
-      <Box>
-        <Typography color="#9e9e9e">{day}</Typography>
+      <Box sx={{ p: 2 }}>
+        <Typography
+          sx={{
+            fontSize: '20px',
+            fontWeight: 600,
+          }}
+          color="#9e9e9e"
+        >
+          {day}
+        </Typography>
       </Box>
 
+      {/* AM */}
       <Box>
         <IconButton
-          onClick={handleOpenAddProductModal}
+          onClick={() => handleOpenAddProductModal({ day, is_am: true })}
           color="primary"
           aria-label="upload picture"
           component="label"
         >
-          <AddIcon />
+          <AddIcon /> AM
         </IconButton>
       </Box>
-      <DragDropContext onDragEnd={onDragEnd}>
-        <List>
-          <Droppable droppableId="list-1">
-            {(providedDrop: any) => (
-              <div ref={providedDrop.innerRef} {...providedDrop.droppableProps}>
-                {items.map((item, i) => {
-                  const thisProduct: ScheduledProduct = item
-                  if (!thisProduct) return null
-                  return (
-                    <Draggable
-                      key={item?.id}
-                      draggableId={`list-${thisProduct?.id}`}
-                      index={i}
-                    >
-                      {(provided: any) => (
-                        <ListItem
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          sx={{
-                            background: getColorForTypeOfProduct(),
-                            alignItems: 'baseline',
-                          }}
-                        >
-                          <ListItemText
-                            sx={{
-                              color: 'black',
-                            }}
-                            primary={thisProduct.name}
-                            secondary={thisProduct.brand}
-                            secondaryTypographyProps={{
-                              style: { color: '#383838' },
-                            }}
-                          />
+      <ScheduledProductDragAndDrop
+        title="AM"
+        onDragEnd={onDragEnd}
+        items={amItems}
+        handleAddToDay={handleAddToDay}
+        day={day}
+      />
 
-                          <IconButton
-                            onClick={() =>
-                              handleAddToDay(day, `${item.product_id}`, item.id)
-                            }
-                            aria-label="upload picture"
-                            component="label"
-                          >
-                            <HighlightOffIcon />
-                          </IconButton>
-                        </ListItem>
-                      )}
-                    </Draggable>
-                  )
-                })}
-                {providedDrop.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </List>
-      </DragDropContext>
+      {/* PM */}
+      <Box>
+        <IconButton
+          onClick={() => handleOpenAddProductModal({ day, is_am: false })}
+          color="primary"
+          aria-label="upload picture"
+          component="label"
+        >
+          <AddIcon /> PM
+        </IconButton>
+      </Box>
+      <ScheduledProductDragAndDrop
+        title="PM"
+        onDragEnd={onDragEnd}
+        items={pmItems}
+        handleAddToDay={handleAddToDay}
+        day={day}
+      />
     </div>
   )
 }

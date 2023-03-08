@@ -25,6 +25,7 @@ interface UpdateProductsOrderArgs {
   day: string
   userId: string
   items: number[]
+  is_am: boolean
 }
 
 export interface GetProductsReturn {
@@ -157,7 +158,6 @@ export const api = createApi({
         headers: createHeaders(),
       }),
       transformResponse: (responseToTransform: any) => {
-        console.log(responseToTransform)
         return responseToTransform
       },
     }),
@@ -170,8 +170,6 @@ export const api = createApi({
         headers: createHeaders(),
       }),
       transformResponse: (responseToTransform: any) => {
-        console.log(responseToTransform.user)
-
         localStorage.setItem(
           'cached-user-data',
           JSON.stringify(responseToTransform.user),
@@ -213,13 +211,14 @@ export const api = createApi({
       number[],
       UpdateProductsOrderArgs
     >({
-      query: ({ day, items, userId }) => ({
+      query: ({ day, items, userId, is_am }) => ({
         url: 'users/day/order',
         method: 'POST',
         body: {
           day,
           items,
           userId,
+          is_am,
         },
         credentials: 'include',
         headers: createHeaders(),

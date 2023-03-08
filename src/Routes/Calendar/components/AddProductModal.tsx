@@ -23,9 +23,14 @@ const style = {
 }
 
 interface P {
-  open: any
+  open: { day: string; is_am: boolean } | null
   handleClose: any
-  handleAddToDay: (day: string, product: string, remove?: boolean) => void
+  handleAddToDay: (args: {
+    day: string
+    productId: string
+    idToRemove?: string | number
+    is_am: boolean
+  }) => void
   products: TransformedGetProductsReturn
 }
 
@@ -42,7 +47,15 @@ const AddProductModal: React.FC<P> = ({
   })
 
   const onSubmit = (data: any) => {
-    handleAddToDay(open, data.product)
+    if (!open) {
+      throw new Error('error with AddProductModal')
+    }
+    // handleAddToDay(open.day, data.product)
+    handleAddToDay({
+      day: open.day,
+      productId: data.product,
+      is_am: open.is_am,
+    })
     handleClose()
   }
   return (

@@ -14,6 +14,7 @@ import {
 import type { ScheduleValues } from '../../shared/redux/services/api'
 import { getCachedUserData } from '../../shared/getCachedUserData'
 import { Link } from 'react-router-dom'
+import type { ScheduledProduct } from '../../types'
 
 const moveItemsInArray = (
   arrayToOperateOn: any[],
@@ -106,7 +107,7 @@ const CalendarRoute: React.FC = () => {
   )
   const [daysInState, setDaysInState] = useState<null | ScheduleValues>(null)
 
-  const [open, setOpen] = useState(null)
+  const [open, setOpen] = useState<null | { day: string; is_am: boolean }>(null)
 
   useEffect(() => {
     if (scheduleData) {
@@ -129,11 +130,17 @@ const CalendarRoute: React.FC = () => {
     return <span>loading...</span>
   }
 
-  const handleAddToDay = (
-    day: string,
-    productId: string,
-    idToRemove?: string | number,
-  ) => {
+  const handleAddToDay = ({
+    day,
+    productId,
+    idToRemove,
+    is_am,
+  }: {
+    day: string
+    productId: string
+    idToRemove?: string | number
+    is_am: boolean
+  }) => {
     if (!userData) return
     if (idToRemove) {
       return deleteProductFromSchedule({ idToRemove })
@@ -142,11 +149,16 @@ const CalendarRoute: React.FC = () => {
       day,
       productId,
       userId: `${userData.id}`,
-      isAm: true,
+      isAm: is_am,
     })
   }
 
-  const reorder = async (startIndex: number, endIndex: number, day: string) => {
+  const reorder = async (
+    startIndex: number,
+    endIndex: number,
+    day: string,
+    is_am: boolean,
+  ) => {
     if (!userData) {
       throw new Error('no user data')
     }
@@ -164,24 +176,41 @@ const CalendarRoute: React.FC = () => {
         day,
         items: newItems,
         userId: `${userData.id}`,
+        is_am,
       })
     } catch (e) {
       console.log('e', e)
     }
   }
 
-  const handleReorderProductsForDay = (day: string, result: any) => {
-    reorder(result.source.index, result.destination.index, day)
+  const handleReorderProductsForDay = (
+    day: string,
+    result: any,
+    is_am: boolean,
+  ) => {
+    reorder(result.source.index, result.destination.index, day, is_am)
   }
 
-  const itemsInOrder = (items: any, day: string) => {
-    const thisScheduledProductOrder = allScheduledProductOrdersData.find(
-      (aspod: any) => aspod.day === day,
-    )
-    if (!thisScheduledProductOrder) return items
-    return thisScheduledProductOrder.scheduled_product_ids.map((x) =>
-      items.find((i) => i.id === x),
-    )
+  interface RItemsInOrder {
+    am: ScheduledProduct[]
+    pm: ScheduledProduct[]
+  }
+
+  const itemsInOrder = (day: string): RItemsInOrder => {
+    const _thisScheduledProductOrder: RItemsInOrder =
+      allScheduledProductOrdersData.reduce((prev: any, curr: any) => {
+        const { is_am, day: currentDay, scheduled_product_ids } = curr
+        if (currentDay !== day) return prev
+
+        return {
+          ...prev,
+          [is_am ? 'am' : 'pm']: scheduled_product_ids.map((x) =>
+            daysInState[day].find((y) => y.id === x),
+          ),
+        }
+      }, {})
+
+    return _thisScheduledProductOrder
   }
 
   if (!allScheduledProductOrdersData) {
@@ -201,8 +230,11 @@ const CalendarRoute: React.FC = () => {
           <Day
             key={day}
             day={day}
-            items={itemsInOrder([...daysInState[day]], day)}
-            handleOpenAddProductModal={() => setOpen(day)}
+            items={itemsInOrder(day)}
+            handleOpenAddProductModal={(args: {
+              day: string
+              is_am: boolean
+            }) => setOpen(args)}
             handleReorderProductsForDay={handleReorderProductsForDay}
             handleAddToDay={handleAddToDay}
           />
