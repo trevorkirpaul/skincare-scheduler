@@ -15,21 +15,9 @@ import axios from 'axios'
 import type { Product } from '../../types'
 
 type NewProduct = Pick<Product, 'name' | 'brand' | 'type' | 'ingredients'>
-// const handleCreateProduct = (newProduct: NewProduct) =>
-//   new Promise(async (res, rej) => {
-//     try {
-//       const { data } = await axios.post(
-//         'http://localhost:3001/products',
-//         newProduct,
-//       )
-//     } catch (e) {
-//       throw new Error('error')
-//     }
-//   })
 
 const CreateProductRoute: React.FC = () => {
   const mutation = useMutation((newProduct: NewProduct) => {
-    // return handleCreateProduct(newProduct)
     return axios.post('http://localhost:3001/products', newProduct)
   })
   const {

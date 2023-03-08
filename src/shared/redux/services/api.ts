@@ -45,7 +45,7 @@ export interface GetProductsReturn {
 interface GetProductsQueryArgs {
   limit: string | null
   skip: string | null
-  search: string | null
+  search?: string | null
 }
 
 export interface ScheduleValues {
@@ -61,6 +61,11 @@ const initialScheduleValues: ScheduleValues = {
   saturday: [],
   sunday: [],
 }
+
+const createHeaders = () => ({
+  SameSite: 'None',
+  Secure: 'true',
+})
 
 const convertGetScheduleResponse = (r: ScheduleFE) => {
   return r.reduce((prev, curr) => {
@@ -85,15 +90,18 @@ type TransformedGetProductCountReturn = string
 
 // Define a service using a base URL and expected endpoints
 export const api = createApi({
-  reducerPath: 'store',
   baseQuery: fetchBaseQuery({ baseUrl: 'http://localhost:3001/' }),
   endpoints: (builder) => ({
     getProductCount: builder.query<
       TransformedGetProductCountReturn,
       string | null | undefined
     >({
-      query: (search) =>
-        search ? `products/count?search=${search}` : `products/count`,
+      query: (search) => ({
+        url: search ? `products/count?search=${search}` : `products/count`,
+        credentials: 'include',
+        headers: createHeaders(),
+      }),
+
       transformResponse: (responseToTransform: GetProductCountReturn) => {
         return responseToTransform.rows[0]?.exact_count || '0'
       },
@@ -102,10 +110,13 @@ export const api = createApi({
       TransformedGetProductsReturn,
       GetProductsQueryArgs
     >({
-      query: (arg) =>
-        `products?limit=${arg.limit || 10}&skip=${arg.skip || 0}&search=${
+      query: (arg) => ({
+        url: `products?limit=${arg.limit || 10}&skip=${arg.skip || 0}&search=${
           arg.search || ''
         }`,
+        credentials: 'include',
+        headers: createHeaders(),
+      }),
       transformResponse: (
         responseToTransform: GetProductsReturn,
       ): TransformedGetProductsReturn => {
@@ -116,10 +127,67 @@ export const api = createApi({
       },
     }),
     getUser: builder.query<User, unknown>({
-      query: () => 'users/admin@scs.com', //@TODO replace with arg
+      query: () => {
+        const cachedUserData: any = localStorage.getItem('cached-user-data')
+
+        if (!cachedUserData || !cachedUserData.email) {
+          throw new Error('')
+        }
+
+        return {
+          url: `users/${cachedUserData.email}`,
+          credentials: 'include',
+          headers: createHeaders(),
+        }
+      },
     }),
-    getSchedule: builder.query<ScheduleValues, unknown>({
-      query: () => 'users/schedule/admin@scs.com', //@TODO replace with arg
+    createUser: builder.mutation<User, unknown>({
+      query: (body) => ({
+        url: 'auth/signup',
+        method: 'POST',
+        body,
+        credentials: 'include',
+        headers: createHeaders(),
+      }),
+      transformResponse: (responseToTransform: any) => {
+        console.log(responseToTransform)
+        return responseToTransform
+      },
+    }),
+    loginUser: builder.mutation<User, unknown>({
+      query: (body) => ({
+        url: 'auth/login',
+        method: 'POST',
+        body,
+        credentials: 'include',
+        headers: createHeaders(),
+      }),
+      transformResponse: (responseToTransform: any) => {
+        console.log(responseToTransform.user)
+
+        localStorage.setItem(
+          'cached-user-data',
+          JSON.stringify(responseToTransform.user),
+        )
+
+        return responseToTransform
+      },
+    }),
+    logoutUser: builder.query({
+      query: () => ({
+        url: 'auth/logout',
+        method: 'GET',
+        credentials: 'include',
+        headers: createHeaders(),
+      }),
+    }),
+    getSchedule: builder.query<ScheduleValues, string>({
+      query: (email) => ({
+        url: `users/schedule/${email}`,
+        method: 'GET',
+        credentials: 'include',
+        headers: createHeaders(),
+      }),
       transformResponse: (
         response: ScheduleFE,
       ): ScheduleValues | Promise<ScheduleValues> =>
@@ -130,6 +198,8 @@ export const api = createApi({
         url: 'scheduled-products',
         method: 'POST',
         body,
+        credentials: 'include',
+        headers: createHeaders(),
       }),
     }),
     updateProductsOrderForDay: builder.mutation<
@@ -144,12 +214,16 @@ export const api = createApi({
           items,
           userId,
         },
+        credentials: 'include',
+        headers: createHeaders(),
       }),
     }),
     getAllScheduledProductOrders: builder.query<any, { userId?: string }>({
       query: ({ userId }) => ({
         url: `users/all_orders/${userId}`,
         method: 'GET',
+        credentials: 'include',
+        headers: createHeaders(),
       }),
     }),
     deleteProductFromSchedule: builder.mutation<
@@ -159,6 +233,8 @@ export const api = createApi({
       query: ({ idToRemove }) => ({
         url: `scheduled-products/${idToRemove}`,
         method: 'DELETE',
+        credentials: 'include',
+        headers: createHeaders(),
       }),
     }),
     getIngredientsForScheduledProducts: builder.query<
@@ -168,6 +244,8 @@ export const api = createApi({
       query: (id) => ({
         url: `scheduled-products/ingredients/${id}`,
         method: 'GET',
+        credentials: 'include',
+        headers: createHeaders(),
       }),
     }),
   }),
@@ -185,4 +263,8 @@ export const {
   useUpdateProductsOrderForDayMutation,
   useGetAllScheduledProductOrdersQuery,
   useGetIngredientsForScheduledProductsQuery,
+  useCreateUserMutation,
+  useLoginUserMutation,
+  // useLogoutUserQuery,
+  useLazyLogoutUserQuery,
 } = api

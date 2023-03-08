@@ -1,16 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Paper, Typography } from '@mui/material'
+import { Box, Button, Typography } from '@mui/material'
 import { Day } from './components/Day'
 import { AddProductModal } from './components/AddProductModal'
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
-import axios from 'axios'
-
 import {
   useDeleteProductFromScheduleMutation,
   useGetProductsQuery,
@@ -20,9 +11,9 @@ import {
   useUpdateScheduleMutation,
   useGetAllScheduledProductOrdersQuery,
 } from '../../shared/redux/services/api'
-import { handleFetchProducts } from '../../shared/ProductAPI'
-import { ScheduledProduct, ScheduleFE } from '../../types'
 import type { ScheduleValues } from '../../shared/redux/services/api'
+import { getCachedUserData } from '../../shared/getCachedUserData'
+import { Link } from 'react-router-dom'
 
 const moveItemsInArray = (
   arrayToOperateOn: any[],
@@ -36,13 +27,20 @@ const moveItemsInArray = (
 }
 
 const CalendarRoute: React.FC = () => {
-  const { data: userData } = useGetUserQuery()
+  const cachedUserData = getCachedUserData()
+  const isNotSignedIn = cachedUserData === false
+
+  const { data: userData } = useGetUserQuery('get-user', {
+    skip: isNotSignedIn,
+  })
 
   const {
     data: scheduleData,
     isLoading: scheduleDataIsLoading,
     refetch,
-  } = useGetScheduleQuery()
+  } = useGetScheduleQuery(cachedUserData ? cachedUserData.email : null, {
+    skip: isNotSignedIn,
+  })
 
   const [
     updateSchedule,
@@ -53,7 +51,12 @@ const CalendarRoute: React.FC = () => {
     data: allScheduledProductOrdersData,
     isLoading: allScheduledProductOrdersIsLoading,
     refetch: handleRefetchAllScheduledProductOrdersData,
-  } = useGetAllScheduledProductOrdersQuery({ userId: `${userData?.id || 1}` })
+  } = useGetAllScheduledProductOrdersQuery(
+    { userId: `${cachedUserData ? cachedUserData.id : null}` },
+    {
+      skip: isNotSignedIn,
+    },
+  )
 
   const [
     deleteProductFromSchedule,
@@ -93,12 +96,14 @@ const CalendarRoute: React.FC = () => {
 
   const {
     data: products,
-    error,
+    error: getProductsError,
     isLoading,
-  } = useGetProductsQuery({
-    limit: '2000',
-    skip: '0',
-  })
+  } = useGetProductsQuery(
+    { limit: '2000', skip: '0' },
+    {
+      skip: isNotSignedIn,
+    },
+  )
   const [daysInState, setDaysInState] = useState<null | ScheduleValues>(null)
 
   const [open, setOpen] = useState(null)
@@ -108,6 +113,17 @@ const CalendarRoute: React.FC = () => {
       setDaysInState(scheduleData)
     }
   }, [scheduleData, daysInState, setDaysInState])
+
+  if (isNotSignedIn) {
+    return (
+      <Box sx={{ background: '#383838', p: 2, borderRadius: '5px' }}>
+        <Typography>You are not signed in.</Typography>
+        <Link to="/auth">
+          <Button>Sign In</Button>
+        </Link>
+      </Box>
+    )
+  }
 
   if (!products || isLoading || !daysInState) {
     return <span>loading...</span>
