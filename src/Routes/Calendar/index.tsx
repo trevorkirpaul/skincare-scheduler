@@ -38,7 +38,7 @@ const CalendarRoute: React.FC = () => {
     data: scheduleData,
     isLoading: scheduleDataIsLoading,
     refetch,
-  } = useGetScheduleQuery('get-schedule', {
+  } = useGetScheduleQuery(cachedUserData ? cachedUserData.email : null, {
     skip: isNotSignedIn,
   })
 
@@ -51,7 +51,12 @@ const CalendarRoute: React.FC = () => {
     data: allScheduledProductOrdersData,
     isLoading: allScheduledProductOrdersIsLoading,
     refetch: handleRefetchAllScheduledProductOrdersData,
-  } = useGetAllScheduledProductOrdersQuery({ userId: `${userData?.id || 1}` })
+  } = useGetAllScheduledProductOrdersQuery(
+    { userId: `${cachedUserData ? cachedUserData.id : null}` },
+    {
+      skip: isNotSignedIn,
+    },
+  )
 
   const [
     deleteProductFromSchedule,
@@ -91,7 +96,7 @@ const CalendarRoute: React.FC = () => {
 
   const {
     data: products,
-    error,
+    error: getProductsError,
     isLoading,
   } = useGetProductsQuery(
     { limit: '2000', skip: '0' },

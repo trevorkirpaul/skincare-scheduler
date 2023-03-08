@@ -78,6 +78,15 @@ export const ProductsRoute = () => {
   const setLimit = (limit: any) => setLimitInState(limit)
   const setSkip = (skip: any) => setSkipInState(skip)
 
+  if (error) {
+    return (
+      <Box>
+        <Typography>Error</Typography>
+        <Typography>Sorry, you are not authorized to view this page</Typography>
+      </Box>
+    )
+  }
+
   if (isLoading || !data) return <span>loading...</span>
 
   return (

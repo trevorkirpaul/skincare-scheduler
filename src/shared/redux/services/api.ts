@@ -143,7 +143,7 @@ export const api = createApi({
     }),
     createUser: builder.mutation<User, unknown>({
       query: (body) => ({
-        url: 'users',
+        url: 'auth/signup',
         method: 'POST',
         body,
         credentials: 'include',
@@ -181,9 +181,9 @@ export const api = createApi({
         headers: createHeaders(),
       }),
     }),
-    getSchedule: builder.query<ScheduleValues, unknown>({
-      query: () => ({
-        url: 'users/schedule/admin@scs.com',
+    getSchedule: builder.query<ScheduleValues, string>({
+      query: (email) => ({
+        url: `users/schedule/${email}`,
         method: 'GET',
         credentials: 'include',
         headers: createHeaders(),
