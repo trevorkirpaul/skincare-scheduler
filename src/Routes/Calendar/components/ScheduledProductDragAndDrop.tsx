@@ -16,7 +16,10 @@ import {
 } from 'react-beautiful-dnd'
 import { ScheduledProduct } from '../../../types'
 import { getColorForTypeOfProduct } from '../../../shared/ColorMap'
-import { HighlightOff as HighlightOffIcon } from '@mui/icons-material'
+import {
+  HighlightOff as HighlightOffIcon,
+  AddCircleOutline as PlusIcon,
+} from '@mui/icons-material'
 
 interface IProps {
   onDragEnd: (x: DropResult, is_am: boolean) => void
@@ -30,6 +33,7 @@ interface IProps {
     is_am: boolean
   }) => void
   day: string
+  addScheduledProductOnClick: () => void
 }
 
 const ScheduledProductDragAndDrop: React.FC<IProps> = ({
@@ -38,10 +42,10 @@ const ScheduledProductDragAndDrop: React.FC<IProps> = ({
   items,
   handleAddToDay,
   day,
+  addScheduledProductOnClick,
 }) => {
   return (
-    <Box sx={{ p: 1, m: 1, border: '1px solid grey', borderRadius: '5px' }}>
-      <Typography>{title}</Typography>
+    <Box sx={{}}>
       <DragDropContext onDragEnd={(x) => onDragEnd(x, title === 'AM')}>
         <List>
           <Droppable droppableId={`list-${title}`}>
@@ -62,8 +66,12 @@ const ScheduledProductDragAndDrop: React.FC<IProps> = ({
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
                           sx={{
-                            background: getColorForTypeOfProduct(),
+                            background: getColorForTypeOfProduct(
+                              thisProduct.name,
+                            ),
                             alignItems: 'baseline',
+                            mb: 1.5,
+                            borderRadius: '5px',
                           }}
                         >
                           <ListItemText
@@ -99,6 +107,30 @@ const ScheduledProductDragAndDrop: React.FC<IProps> = ({
               </div>
             )}
           </Droppable>
+          <ListItem
+            sx={{
+              alignItems: 'baseline',
+              mb: 1.5,
+              borderRadius: '5px',
+              border: '1px solid #666',
+              '&:hover': {
+                cursor: 'pointer',
+                background: '#333',
+              },
+            }}
+            onClick={addScheduledProductOnClick}
+          >
+            <ListItemText
+              sx={{
+                color: '#666',
+              }}
+              primary="Add"
+              secondaryTypographyProps={{
+                style: { color: '#383838' },
+              }}
+            />
+            <PlusIcon sx={{ color: '#666' }} />
+          </ListItem>
         </List>
       </DragDropContext>
     </Box>

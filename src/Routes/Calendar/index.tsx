@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react'
-import { Box, Button, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Typography,
+  Tabs,
+  Tab,
+  AppBar,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@mui/material'
 import { Day } from './components/Day'
 import { AddProductModal } from './components/AddProductModal'
 import {
@@ -31,8 +40,14 @@ const CalendarRoute: React.FC = () => {
   const cachedUserData = getCachedUserData()
   const isNotSignedIn = cachedUserData === false
 
+  // for tab bar
+  const [selectedTab, setSelectedTab] = useState(0)
+
+  const [selectedView, setSelectedView] = useState<'day' | 'week'>('day')
+
   const { data: userData } = useGetUserQuery('get-user', {
-    skip: isNotSignedIn,
+    skip: false,
+    refetchOnMountOrArgChange: true,
   })
 
   const {
@@ -143,7 +158,7 @@ const CalendarRoute: React.FC = () => {
   }) => {
     if (!userData) return
     if (idToRemove) {
-      return deleteProductFromSchedule({ idToRemove })
+      return deleteProductFromSchedule({ idToRemove, is_am })
     }
     updateSchedule({
       day,
@@ -164,7 +179,7 @@ const CalendarRoute: React.FC = () => {
     }
 
     const thisScheduledProductOrder = allScheduledProductOrdersData.find(
-      (aspod: any) => aspod.day === day,
+      (aspod: any) => aspod.day === day && aspod.is_am === is_am,
     )
 
     const items = thisScheduledProductOrder.scheduled_product_ids
@@ -217,6 +232,8 @@ const CalendarRoute: React.FC = () => {
     return <div>loading...</div>
   }
 
+  const dayToRender = Object.keys(daysInState)[selectedTab]
+
   return (
     <div>
       <AddProductModal
@@ -225,12 +242,45 @@ const CalendarRoute: React.FC = () => {
         handleClose={() => setOpen(null)}
         handleAddToDay={handleAddToDay}
       />
+      {/* TOGGLE TO SELECT VIEW TYPE (DAY | WEEK) */}
+      <Box sx={{ mb: 5 }}>
+        <ToggleButtonGroup
+          color="primary"
+          value={selectedView}
+          exclusive
+          onChange={(x, y) => setSelectedView(y)}
+          aria-label="Platform"
+        >
+          <ToggleButton value="day">Day</ToggleButton>
+          <ToggleButton value="week">Week</ToggleButton>
+        </ToggleButtonGroup>
+      </Box>
+
+      {/* TAB BAR FOR DAY VIEW */}
+      {selectedView === 'day' && (
+        <Box sx={{ backgroundColor: 'black' }}>
+          <Tabs
+            value={selectedTab}
+            onChange={(x, y) => setSelectedTab(y)}
+            indicatorColor="secondary"
+            textColor="inherit"
+            variant="fullWidth"
+            aria-label="full width tabs example"
+          >
+            {Object.keys(daysInState).map((d) => (
+              <Tab label={d} key={d} />
+            ))}
+          </Tabs>
+        </Box>
+      )}
+
+      {/* RENDERED DAY | WEEK */}
       <div style={{ display: 'flex' }}>
-        {Object.keys(daysInState).map((day) => (
+        {selectedView === 'day' && (
           <Day
-            key={day}
-            day={day}
-            items={itemsInOrder(day)}
+            selectedView={selectedView}
+            day={dayToRender}
+            items={itemsInOrder(dayToRender)}
             handleOpenAddProductModal={(args: {
               day: string
               is_am: boolean
@@ -238,7 +288,22 @@ const CalendarRoute: React.FC = () => {
             handleReorderProductsForDay={handleReorderProductsForDay}
             handleAddToDay={handleAddToDay}
           />
-        ))}
+        )}
+        {selectedView === 'week' &&
+          Object.keys(daysInState).map((day) => (
+            <Day
+              selectedView={selectedView}
+              key={day}
+              day={day}
+              items={itemsInOrder(day)}
+              handleOpenAddProductModal={(args: {
+                day: string
+                is_am: boolean
+              }) => setOpen(args)}
+              handleReorderProductsForDay={handleReorderProductsForDay}
+              handleAddToDay={handleAddToDay}
+            />
+          ))}
       </div>
     </div>
   )

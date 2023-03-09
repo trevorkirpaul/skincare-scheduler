@@ -1,15 +1,17 @@
-export const getColorForTypeOfProduct = (productType?: string) => {
-  switch (productType) {
-    case 'cleanser':
-      return 'skyblue'
-    case 'cream':
-      return '#20B2AA'
-    case 'exfoliant':
-    case 'retinol':
-      return 'pink'
-    case 'ointment':
-      return '#5c6bc0'
-    default:
-      return 'grey'
+var stringToColour = function (str) {
+  var hash = 0
+  for (var i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
   }
+  var colour = '#'
+  for (var i = 0; i < 3; i++) {
+    var value = (hash >> (i * 8)) & 0xff
+    colour += ('00' + value.toString(16)).substr(-2)
+  }
+  return colour
+}
+
+export const getColorForTypeOfProduct = (productType?: string) => {
+  if (!productType) return 'grey'
+  return stringToColour(productType)
 }

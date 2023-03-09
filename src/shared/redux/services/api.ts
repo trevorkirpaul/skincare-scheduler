@@ -234,10 +234,10 @@ export const api = createApi({
     }),
     deleteProductFromSchedule: builder.mutation<
       UpdateScheduleReturn,
-      { idToRemove: string | number }
+      { idToRemove: string | number; is_am: boolean }
     >({
-      query: ({ idToRemove }) => ({
-        url: `scheduled-products/${idToRemove}`,
+      query: ({ idToRemove, is_am }) => ({
+        url: `scheduled-products/${idToRemove}/${is_am ? 'AM' : 'PM'}`,
         method: 'DELETE',
         credentials: 'include',
         headers: createHeaders(),
